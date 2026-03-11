@@ -1,0 +1,51 @@
+h1 {
+     text-align: center;
+}
+
+p {
+     text-align: center;
+}
+
+#chocolate-elves {
+     padding: 0;
+     display: flex;
+     border: 3px solid black;
+     width: 40vw;
+}
+
+#chocolate-elves-title {
+     margin: 10px;
+     text-align: right;
+}
+
+#chocolate-elves-cost-text {
+     margin: 10px;
+     text-align: right;
+}
+
+#chocolate-elves-count {
+     margin: 10px;
+     text-align: right;
+}
+
+#chocolate-dwarves {
+     padding: 0;
+     display: flex;
+     border: 3px solid black;
+     width: 40vw;
+}
+
+#dwarves-title {
+     margin: 10px;
+     text-align: right;
+}
+
+#dwarves-cost-text {
+     margin: 10px;
+     text-align: right;
+}
+
+#dwarves-count {
+     margin: 10px;
+     text-align: right;
+}

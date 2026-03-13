@@ -6,46 +6,85 @@ p {
      text-align: center;
 }
 
+#left-section {
+     float: left;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+}
+
+#right-section {
+     float: right;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     justify-content: center;
+}
+
+#total-chocolate {
+     font-size: 30pt;
+}
+
 #chocolate-elves {
      padding: 0;
      display: flex;
-     border: 3px solid black;
-     width: 40vw;
+     align-items: center;
+     justify-content: space-evenly;
+     border: 2px solid black;
+     width: 20vw;
 }
 
 #chocolate-elves-title {
-     margin: 10px;
      text-align: right;
 }
 
 #chocolate-elves-cost-text {
-     margin: 10px;
      text-align: right;
 }
 
 #chocolate-elves-count {
-     margin: 10px;
      text-align: right;
 }
 
 #chocolate-dwarves {
      padding: 0;
      display: flex;
-     border: 3px solid black;
-     width: 40vw;
+     align-items: center;
+     justify-content: space-evenly;
+     border: 2px solid black;
+     width: 20vw;
 }
 
 #dwarves-title {
-     margin: 10px;
      text-align: right;
 }
 
 #dwarves-cost-text {
-     margin: 10px;
      text-align: right;
 }
 
 #dwarves-count {
-     margin: 10px;
+     text-align: right;
+}
+
+#chocolate-orges {
+     padding: 0;
+     display: flex;
+     align-items: center;
+     justify-content: space-evenly;
+     border: 2px solid black;
+     width: 20vw;
+}
+
+#orges-title {
+     text-align: right;
+}
+
+#orges-cost-text {
+     text-align: right;
+}
+
+#orges-count {
      text-align: right;
 }

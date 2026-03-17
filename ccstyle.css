@@ -1,90 +1,114 @@
-h1 {
-     text-align: center;
-}
-
+/* Global Layout */
+h1,
 p {
      text-align: center;
 }
 
-#left-section {
-     float: left;
+body {
+     font-family: sans-serif;
      display: flex;
-     flex-direction: column;
-     align-items: center;
-     justify-content: center;
+     justify-content: space-around;
+     padding: 20px;
+     background-color: rgb(196, 164, 132);
 }
 
-#right-section {
-     float: right;
+#main-container {
+     display: flex;
+     flex-direction: column;
+     gap: 10px;
+     width: 100%;
+}
+
+#top-section {
      display: flex;
      flex-direction: column;
      align-items: center;
-     justify-content: center;
+     width: 100%;
+}
+
+#bottom-section {
+     display: flex;
+     justify-content: space-between;
+     width: 100%;
+}
+
+#left-section,
+#center-section,
+#right-section {
+     flex: 1;
+     display: flex;
+     flex-direction: column;
+     align-items: center;
+     border: 2px dotted chocolate;
 }
 
 #total-chocolate {
-     font-size: 30pt;
+     font-size: 2rem;
 }
 
-#chocolate-elves {
-     padding: 0;
+/* Upgrade Row Styles */
+.upgrade-row {
      display: flex;
      align-items: center;
-     justify-content: space-evenly;
-     border: 2px solid black;
-     width: 20vw;
+     justify-content: space-between;
+     border: 5px solid black;
+     width: 25vw;
+     height: 85px;
+     /* Increased slightly for comfort */
+     padding: 5px 15px;
+     background-color: rgb(200, 200, 200);
+     cursor: pointer;
+     transition: 0.2s;
+     overflow: hidden;
 }
 
-#chocolate-elves-title {
-     text-align: right;
+/* Left Icon */
+.upgrade-icon {
+     height: 60px;
+     width: auto;
+     object-fit: contain;
 }
 
-#chocolate-elves-cost-text {
-     text-align: right;
+/* Center Container (Title over Cost) */
+.cost-title-container {
+     display: flex;
+     flex-direction: column;
+     justify-content: center;
+     flex-grow: 1;
+     margin-left: 15px;
 }
 
-#chocolate-elves-count {
-     text-align: right;
-}
-
-#chocolate-dwarves {
+.top-text {
+     font-size: 1.2rem;
+     margin: 0;
      padding: 0;
+}
+
+/* Side-by-Side (Choco Icon + Price) */
+.side-by-side {
      display: flex;
      align-items: center;
-     justify-content: space-evenly;
-     border: 2px solid black;
-     width: 20vw;
+     gap: 8px;
 }
 
-#dwarves-title {
-     text-align: right;
+.mini-choco {
+     height: 20px;
+     /* Small enough to fit with text */
+     width: auto;
 }
 
-#dwarves-cost-text {
-     text-align: right;
+.cost-text {
+     font-size: 1rem;
+     margin: 0;
 }
 
-#dwarves-count {
-     text-align: right;
+/* Right Count */
+.count-display {
+     font-size: 2rem;
+     margin: 0;
+     opacity: 0.5;
 }
 
-#chocolate-orges {
-     padding: 0;
-     display: flex;
-     align-items: center;
-     justify-content: space-evenly;
-     border: 2px solid black;
-     width: 20vw;
-}
-
-#orges-title {
-     text-align: right;
-}
-
-#orges-cost-text {
-     text-align: right;
-}
-
-#orges-count {
-     text-align: right;
+#chocolatebarimage {
+     scale: 0.9;
 }

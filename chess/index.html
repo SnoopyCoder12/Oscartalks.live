@@ -1,0 +1,736 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+     <meta charset="UTF-8">
+     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+     <title>Chess AI Challenge</title>
+
+     <!-- Tailwind CSS for styling -->
+     <script src="https://cdn.tailwindcss.com"></script>
+
+     <!-- Chessboard.js CSS -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.css">
+
+     <!-- Google Fonts for typography -->
+     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;600;800&display=swap" rel="stylesheet">
+
+     <!-- FontAwesome for icons -->
+     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+     <style>
+          body {
+               font-family: 'Inter', sans-serif;
+               background-color: #0f172a;
+               /* Slate 900 */
+               color: #f8fafc;
+               /* Slate 50 */
+               display: flex;
+               flex-direction: column;
+               min-height: 100vh;
+               margin: 0;
+               padding: 0;
+          }
+
+          /* Chessboard custom styling overrides */
+          .board-b72b1 {
+               border: 2px solid #334155;
+               border-radius: 8px;
+               overflow: hidden;
+               box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+          }
+
+          .white-1e1d7 {
+               background-color: #cbd5e1;
+               /* Slate 300 */
+               color: #334155;
+          }
+
+          .black-3c85d {
+               background-color: #475569;
+               /* Slate 600 */
+               color: #f8fafc;
+          }
+
+          .highlight1-32417,
+          .highlight2-9c5d2 {
+               box-shadow: inset 0 0 3px 3px yellow;
+               opacity: 0.8;
+          }
+
+          /* Glassmorphism panel styling */
+          .glass-panel {
+               background: rgba(30, 41, 59, 0.7);
+               /* Slate 800 with opacity */
+               backdrop-filter: blur(10px);
+               -webkit-backdrop-filter: blur(10px);
+               border: 1px solid rgba(255, 255, 255, 0.1);
+               border-radius: 12px;
+               box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3);
+          }
+
+          /* Button styling */
+          .btn {
+               transition: all 0.2s ease;
+          }
+
+          .btn:hover {
+               transform: translateY(-2px);
+               box-shadow: 0 4px 12px rgba(59, 130, 246, 0.4);
+               /* Blue shadow */
+          }
+
+          .btn:active {
+               transform: translateY(0);
+          }
+
+          /* Modal styling */
+          .modal-overlay {
+               background-color: rgba(0, 0, 0, 0.75);
+               backdrop-filter: blur(4px);
+          }
+
+          /* Custom scrollbar for move history */
+          #moveHistory::-webkit-scrollbar {
+               width: 8px;
+          }
+
+          #moveHistory::-webkit-scrollbar-track {
+               background: #1e293b;
+               border-radius: 4px;
+          }
+
+          #moveHistory::-webkit-scrollbar-thumb {
+               background: #475569;
+               border-radius: 4px;
+          }
+
+          #moveHistory::-webkit-scrollbar-thumb:hover {
+               background: #64748b;
+          }
+
+          /* Move history item styling */
+          .move-row {
+               display: grid;
+               grid-template-columns: 30px 1fr 1fr;
+               padding: 4px 8px;
+               border-bottom: 1px solid #334155;
+               font-size: 0.9rem;
+          }
+
+          .move-row:nth-child(even) {
+               background-color: rgba(51, 65, 85, 0.3);
+          }
+
+          .move-number {
+               color: #94a3b8;
+               font-weight: 600;
+          }
+
+          .move-san {
+               text-align: center;
+          }
+     </style>
+</head>
+
+<body class="antialiased">
+
+     <div class="container mx-auto px-4 py-8 max-w-6xl flex-grow flex flex-col items-center">
+
+          <!-- Header -->
+          <header class="w-full text-center mb-6">
+               <h1
+                    class="text-4xl md:text-5xl font-extrabold tracking-tight text-transparent bg-clip-text bg-gradient-to-r from-blue-400 to-emerald-400 mb-2">
+                    <i class="fa-solid fa-chess-knight mr-2"></i>Yo Mama AI
+               </h1>
+               <p class="text-slate-400 text-sm md:text-base">Challenge yo mama directly in yo browser.
+               </p>
+          </header>
+
+          <!-- Main Game Area -->
+          <div class="w-full flex flex-col lg:flex-row gap-8 justify-center items-start">
+
+               <!-- Left Side: Player Info & Chessboard -->
+               <div class="w-full lg:w-2/3 max-w-[600px] flex flex-col gap-4">
+
+                    <!-- AI Opponent Info -->
+                    <div class="glass-panel p-3 flex justify-between items-center rounded-lg shadow">
+                         <div class="flex items-center gap-3">
+                              <div
+                                   class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border-2 border-emerald-500">
+                                   <img src="istockphoto-2065672731-612x612.jpg" alt="">
+                              </div>
+                              <div>
+                                   <h3 class="font-bold text-slate-200 leading-tight">Yo Mama</h3>
+                                   <span id="aiThinking"
+                                        class="text-xs text-emerald-400 font-semibold flex items-center gap-1 hidden">
+                                        <i class="fa-solid fa-circle-notch fa-spin"></i> Computing...
+                                   </span>
+                              </div>
+                         </div>
+                         <div class="bg-slate-800 px-3 py-1 rounded text-sm font-mono text-slate-300 shadow-inner">
+                              BOT (Dirty clanker) Sorry you had to find out this way
+                         </div>
+                    </div>
+
+                    <!-- The Chessboard Container -->
+                    <div id="boardContainer" class="w-full aspect-square shadow-2xl rounded-lg">
+                         <!-- chessboard.js injects board here -->
+                         <div id="myBoard" class="w-full h-full"></div>
+                    </div>
+
+                    <!-- Human Player Info -->
+                    <div class="glass-panel p-3 flex justify-between items-center rounded-lg shadow">
+                         <div class="flex items-center gap-3">
+                              <div
+                                   class="w-10 h-10 rounded-full bg-slate-700 flex items-center justify-center border-2 border-blue-500">
+                                   <i class="fa-solid fa-user text-blue-400 text-xl"></i>
+                              </div>
+                              <div>
+                                   <h3 class="font-bold text-slate-200 leading-tight">You (NON Bot)</h3>
+                                   <span id="playerTurn"
+                                        class="text-xs text-blue-400 font-semibold flex items-center gap-1 hidden">
+                                        Your Turn
+                                   </span>
+                              </div>
+                         </div>
+                         <div class="bg-slate-800 px-3 py-1 rounded text-sm font-mono text-slate-300 shadow-inner">
+                              Player
+                         </div>
+                    </div>
+               </div>
+
+               <!-- Right Side: Controls, Settings & Move History -->
+               <div class="w-full lg:w-1/3 flex flex-col gap-6 max-w-[400px]">
+
+                    <!-- Game Status Panel -->
+                    <div class="glass-panel p-5 rounded-xl text-center">
+                         <h2 class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2">Game Status</h2>
+                         <div id="statusEl" class="text-xl font-bold text-white min-h-[30px]">Wanker to move</div>
+                    </div>
+
+                    <!-- Settings & Controls Panel -->
+                    <div class="glass-panel p-5 rounded-xl flex flex-col gap-4">
+                         <h2
+                              class="text-sm font-semibold text-slate-400 uppercase tracking-wider mb-2 border-b border-slate-700 pb-2">
+                              Settings</h2>
+
+                         <!-- Difficulty Slider -->
+                         <div>
+                              <label for="difficulty"
+                                   class="block text-sm font-medium text-slate-300 mb-2 flex justify-between">
+                                   Gooner Difficulty <span id="difficultyVal"
+                                        class="text-emerald-400 font-mono bg-slate-800 px-2 py-0.5 rounded">Level
+                                        5</span>
+                              </label>
+                              <input type="range" id="difficulty" min="0" max="20" value="5"
+                                   class="w-full h-2 bg-slate-700 rounded-lg appearance-none cursor-pointer accent-emerald-500">
+                              <div class="flex justify-between text-xs text-slate-500 mt-1">
+                                   <span>Gooner</span>
+                                   <span>???</span>
+                              </div>
+                         </div>
+
+                         <!-- Action Buttons -->
+                         <div class="grid grid-cols-2 gap-3 mt-2">
+                              <button id="newGameBtn"
+                                   class="btn bg-blue-600 hover:bg-blue-500 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+                                   <i class="fa-solid fa-plus"></i> Fresh Start (cuz you got urself inna pickle)
+                              </button>
+                              <button id="undoBtn"
+                                   class="btn bg-slate-700 hover:bg-slate-600 text-white font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2">
+                                   <i class="fa-solid fa-rotate-left"></i> Undo
+                              </button>
+                         </div>
+                         <button id="flipBoardBtn"
+                              class="btn border border-slate-600 hover:bg-slate-700 text-slate-300 font-semibold py-2 px-4 rounded-lg flex items-center justify-center gap-2 mt-1">
+                              <i class="fa-solid fa-arrows-up-down"></i> Flip Board 
+                         </button>
+                    </div>
+
+                    <!-- Move History Panel -->
+                    <div class="glass-panel rounded-xl flex flex-col flex-grow overflow-hidden max-h-[350px]">
+                         <div class="p-3 border-b border-slate-700 bg-slate-800/50">
+                              <h2 class="text-sm font-semibold text-slate-300 flex items-center gap-2">
+                                   <i class="fa-solid fa-list-ul"></i> Move History
+                              </h2>
+                         </div>
+                         <div class="flex flex-col h-full bg-slate-800/30">
+                              <!-- Table Header -->
+                              <div
+                                   class="grid grid-cols-3 text-xs font-semibold text-slate-400 p-2 border-b border-slate-700/50">
+                                   <div class="text-center">#</div>
+                                   <div class="text-center">Wanker</div>
+                                   <div class="text-center">Non-Wanker</div>
+                              </div>
+                              <!-- Scrollable List -->
+                              <div id="moveHistory" class="overflow-y-auto flex-grow p-2">
+                                   <!-- Moves will be injected here -->
+                                   <div class="text-center text-slate-500 text-sm mt-4 italic" id="emptyHistoryMsg">No
+                                        moves yet.</div>
+                              </div>
+                         </div>
+                    </div>
+
+               </div>
+          </div>
+     </div>
+
+     <!-- Game Over Modal -->
+     <div id="gameOverModal" class="fixed inset-0 z-50 hidden flex items-center justify-center modal-overlay">
+          <div class="glass-panel p-8 rounded-2xl max-w-sm w-full mx-4 text-center transform scale-95 transition-transform duration-300"
+               id="modalContent">
+               <div id="modalIcon" class="text-6xl mb-4"></div>
+               <h2 id="modalTitle" class="text-3xl font-bold mb-2">Game Over</h2>
+               <p id="modalMessage" class="text-slate-300 mb-6 text-lg"></p>
+               <button id="modalNewGameBtn"
+                    class="w-full btn bg-blue-600 hover:bg-blue-500 text-white font-bold py-3 px-4 rounded-xl text-lg shadow-lg">
+                    Play Again
+               </button>
+          </div>
+     </div>
+
+     <!-- External Scripts Required for Logic -->
+
+     <!-- 1. jQuery (Required by chessboard.js) -->
+     <script src="https://code.jquery.com/jquery-3.7.1.min.js"
+          integrity="sha256-/JqT3SQfawRcv/BIHPThkBvs0OEvtFFmqPF/lYI/Cxo=" crossorigin="anonymous"></script>
+
+     <!-- 2. Chess.js (Chess Logic/Rules Validation) -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/chess.js/0.10.2/chess.js"></script>
+
+     <!-- 3. Chessboard.js (UI rendering) -->
+     <script src="https://cdnjs.cloudflare.com/ajax/libs/chessboard-js/1.0.0/chessboard-1.0.0.min.js"></script>
+
+     <script>
+          // Wait for DOM and all external scripts to be fully loaded
+          $(document).ready(function () {
+               // ==========================================
+               // Variables & State
+               // ==========================================
+
+               // Core Game Objects
+               let board = null;
+               let game = new Chess();
+
+               // AI (Stockfish) State
+               let stockfishWorker = null;
+               let isEngineComputing = false;
+               let engineSkillLevel = 5; // 0-20
+
+               // UI State
+               let playerColor = 'w'; // 'w' for white, 'b' for black
+               const squareClass = 'square-55d63';
+               const highlightClass = 'highlight1-32417';
+
+               // DOM Elements
+               const statusEl = document.getElementById('statusEl');
+               const moveHistoryEl = document.getElementById('moveHistory');
+               const emptyHistoryMsg = document.getElementById('emptyHistoryMsg');
+               const aiThinkingEl = document.getElementById('aiThinking');
+               const playerTurnEl = document.getElementById('playerTurn');
+               const difficultySlider = document.getElementById('difficulty');
+               const difficultyVal = document.getElementById('difficultyVal');
+
+               // Modal Elements
+               const gameOverModal = document.getElementById('gameOverModal');
+               const modalTitle = document.getElementById('modalTitle');
+               const modalMessage = document.getElementById('modalMessage');
+               const modalIcon = document.getElementById('modalIcon');
+               const modalContent = document.getElementById('modalContent');
+
+               // ==========================================
+               // AI Setup (Stockfish via Web Worker)
+               // ==========================================
+
+               function initStockfish() {
+                    try {
+                         // We load stockfish.js from a CDN as a Web Worker
+                         // It requires fetching the JS file content to create an inline worker to avoid CORS issues
+                         fetch('https://cdnjs.cloudflare.com/ajax/libs/stockfish.js/10.0.2/stockfish.js')
+                              .then(response => response.text())
+                              .then(scriptText => {
+                                   const blob = new Blob([scriptText], { type: 'application/javascript' });
+                                   const workerUrl = URL.createObjectURL(blob);
+                                   stockfishWorker = new Worker(workerUrl);
+
+                                   setupEngineListeners();
+
+                                   // Initialize engine settings
+                                   sendCommand('uci');
+                                   sendCommand('ucinewgame');
+                                   updateEngineDifficulty();
+
+                                   console.log("Stockfish Engine initialized successfully.");
+                              })
+                              .catch(err => {
+                                   console.error("Failed to load Stockfish engine:", err);
+                                   statusEl.innerText = "Error loading AI Engine. Check console.";
+                              });
+                    } catch (e) {
+                         console.error("Worker creation failed:", e);
+                    }
+               }
+
+               function setupEngineListeners() {
+                    stockfishWorker.onmessage = function (event) {
+                         const line = event.data;
+
+                         // Look for the engine's move format: "bestmove e2e4 ponder e7e5"
+                         if (line && typeof line === 'string') {
+                              if (line.startsWith('bestmove')) {
+                                   const match = line.match(/^bestmove ([a-h][1-8])([a-h][1-8])([qrbn])?/);
+                                   if (match) {
+                                        isEngineComputing = false;
+                                        aiThinkingEl.classList.add('hidden');
+
+                                        const from = match[1];
+                                        const to = match[2];
+                                        const promotion = match[3] || 'q'; // default to queen if not specified
+
+                                        // Execute the AI's move on our local logic board
+                                        const move = game.move({
+                                             from: from,
+                                             to: to,
+                                             promotion: promotion
+                                        });
+
+                                        if (move) {
+                                             // Update visual board
+                                             board.position(game.fen());
+                                             updateStatus();
+                                             updateMoveHistory();
+                                        }
+                                   }
+                              }
+                         }
+                    };
+               }
+
+               function sendCommand(cmd) {
+                    if (stockfishWorker) {
+                         stockfishWorker.postMessage(cmd);
+                    }
+               }
+
+               // ==========================================
+               // Chessboard.js Configuration & Interaction
+               // ==========================================
+
+               function onDragStart(source, piece, position, orientation) {
+                    // Do not pick up pieces if the game is over
+                    if (game.game_over()) return false;
+
+                    // Only pick up pieces for the side to move
+                    if ((game.turn() === 'w' && piece.search(/^b/) !== -1) ||
+                         (game.turn() === 'b' && piece.search(/^w/) !== -1)) {
+                         return false;
+                    }
+
+                    // Do not pick up pieces if it's the AI's turn
+                    if (isEngineComputing) return false;
+
+                    // Optional: Prevent player from moving opponent's pieces if board is flipped
+                    if ((orientation === 'white' && piece.search(/^b/) !== -1) ||
+                         (orientation === 'black' && piece.search(/^w/) !== -1)) {
+                         return false;
+                    }
+               }
+
+               function onDrop(source, target) {
+                    removeHighlights();
+
+                    // See if the move is legal using chess.js logic
+                    // Try moving with promotion to Queen as default
+                    let move = game.move({
+                         from: source,
+                         to: target,
+                         promotion: 'q' // NOTE: always promote to a queen for simplicity in this UI
+                    });
+
+                    // Illegal move check
+                    if (move === null) return 'snapback';
+
+                    // Update UI based on human move
+                    updateStatus();
+                    updateMoveHistory();
+                    highlightMove(source, target);
+
+                    // If game isn't over, trigger AI turn
+                    if (!game.game_over()) {
+                         window.setTimeout(makeRandomOrAIMove, 250);
+                    }
+               }
+
+               // Update the board position after the piece snap
+               // for castling, en passant, pawn promotion
+               function onSnapEnd() {
+                    board.position(game.fen());
+               }
+
+               function makeRandomOrAIMove() {
+                    if (game.game_over()) return;
+
+                    isEngineComputing = true;
+                    aiThinkingEl.classList.remove('hidden');
+                    playerTurnEl.classList.add('hidden');
+
+                    statusEl.innerHTML = `<i class="fa-solid fa-circle-notch fa-spin text-emerald-500 mr-2"></i> Yo mama is thinking...`;
+
+                    if (stockfishWorker) {
+                         // Feed current position to engine
+                         sendCommand(`position fen ${game.fen()}`);
+
+                         // Tell engine to find best move. 
+                         // Depth determines strength/speed. Adjust based on difficulty slider.
+                         // Skill level 0-20 maps roughly to depth 1-15 for a web worker to stay responsive
+                         const depth = Math.max(1, Math.floor(engineSkillLevel * 0.75));
+                         sendCommand(`go depth ${depth}`);
+                    } else {
+                         // Fallback to random move if engine fails to load
+                         fallbackRandomMove();
+                    }
+               }
+
+               function fallbackRandomMove() {
+                    const possibleMoves = game.moves();
+
+                    // Checkmate/stalemate check handled in updateStatus, but double check here
+                    if (possibleMoves.length === 0) return;
+
+                    const randomIdx = Math.floor(Math.random() * possibleMoves.length);
+                    const move = game.move(possibleMoves[randomIdx]);
+
+                    board.position(game.fen());
+                    isEngineComputing = false;
+                    aiThinkingEl.classList.add('hidden');
+                    updateStatus();
+                    updateMoveHistory();
+
+                    // Highlight fallback move (parse SAN to get squares requires more complex logic, skip highlight for fallback)
+               }
+
+               // ==========================================
+               // UI Update Functions
+               // ==========================================
+
+               function updateStatus() {
+                    let statusHTML = '';
+                    let moveColor = game.turn() === 'w' ? 'Wanker' : 'Non-Wanker';
+
+                    // Checkmate
+                    if (game.in_checkmate()) {
+                         statusHTML = `<span class="text-red-500">Game Over: ${moveColor} is in checkmate.</span>`;
+                         showGameOverModal(
+                              "Checkmate!",
+                              `${moveColor === 'Wanker' ? 'Non-Wanker' : 'Wanker'} wins the match.`,
+                              '<i class="fa-solid fa-skull-crossbones text-red-500"></i>'
+                         );
+                    }
+                    // Draw
+                    else if (game.in_draw()) {
+                         statusHTML = `<span class="text-yellow-400">Game Over: Drawn position.</span>`;
+
+                         let drawReason = "Drawn game.";
+                         if (game.in_stalemate()) drawReason = "Stalemate.";
+                         else if (game.in_threefold_repetition()) drawReason = "Threefold repetition.";
+                         else if (game.insufficient_material()) drawReason = "Insufficient material.";
+
+                         showGameOverModal("It's a Draw!", drawReason, '<i class="fa-solid fa-handshake text-yellow-500"></i>');
+                    }
+                    // Game still on
+                    else {
+                         statusHTML = `${moveColor} to move`;
+
+                         // Check
+                         if (game.in_check()) {
+                              statusHTML += `, <span class="text-orange-400 font-bold">${moveColor} is in check</span>`;
+                         }
+                    }
+
+                    statusEl.innerHTML = statusHTML;
+
+                    // Update turn indicators
+                    if (!game.game_over()) {
+                         if ((game.turn() === 'w' && playerColor === 'w') || (game.turn() === 'b' && playerColor === 'b')) {
+                              playerTurnEl.classList.remove('hidden');
+                         } else {
+                              playerTurnEl.classList.add('hidden');
+                         }
+                    } else {
+                         playerTurnEl.classList.add('hidden');
+                         aiThinkingEl.classList.add('hidden');
+                    }
+               }
+
+               function updateMoveHistory() {
+                    const history = game.history();
+
+                    if (history.length === 0) {
+                         moveHistoryEl.innerHTML = '';
+                         emptyHistoryMsg.style.display = 'block';
+                         moveHistoryEl.appendChild(emptyHistoryMsg);
+                         return;
+                    }
+
+                    emptyHistoryMsg.style.display = 'none';
+
+                    // We only need to append the latest move, but rebuilding is safer for undo functionality
+                    moveHistoryEl.innerHTML = '';
+
+                    for (let i = 0; i < history.length; i += 2) {
+                         const row = document.createElement('div');
+                         row.className = 'move-row';
+
+                         const moveNumber = Math.floor(i / 2) + 1;
+                         const whiteMove = history[i];
+                         const blackMove = history[i + 1] ? history[i + 1] : '';
+
+                         row.innerHTML = `
+                        <div class="move-number">${moveNumber}.</div>
+                        <div class="move-san text-slate-200">${whiteMove}</div>
+                        <div class="move-san text-slate-400">${blackMove}</div>
+                    `;
+
+                         moveHistoryEl.appendChild(row);
+                    }
+
+                    // Auto-scroll to bottom
+                    moveHistoryEl.scrollTop = moveHistoryEl.scrollHeight;
+               }
+
+               function removeHighlights() {
+                    $('#myBoard .square-55d63').removeClass(highlightClass);
+               }
+
+               function highlightMove(source, target) {
+                    removeHighlights();
+                    $('#myBoard .square-' + source).addClass(highlightClass);
+                    $('#myBoard .square-' + target).addClass(highlightClass);
+               }
+
+               function updateEngineDifficulty() {
+                    // Stockfish Skill Level ranges from 0 to 20
+                    if (stockfishWorker) {
+                         sendCommand(`setoption name Skill Level value ${engineSkillLevel}`);
+
+                         // Label text update
+                         if (engineSkillLevel < 4) difficultyVal.innerText = "Gooner";
+                         else if (engineSkillLevel < 8) difficultyVal.innerText = "Supa Gooner";
+                         else if (engineSkillLevel < 14) difficultyVal.innerText = "Mega Gooner";
+                         else if (engineSkillLevel < 18) difficultyVal.innerText = "Ultra Gooner";
+                         else difficultyVal.innerText = "Ma boi never sleep cuz all ma boi does is GOON";
+                    }
+               }
+
+               function showGameOverModal(title, message, iconHtml) {
+                    modalTitle.innerText = title;
+                    modalMessage.innerText = message;
+                    modalIcon.innerHTML = iconHtml;
+
+                    gameOverModal.classList.remove('hidden');
+                    // Small delay to allow display:flex to apply before animating transform
+                    setTimeout(() => {
+                         modalContent.classList.remove('scale-95');
+                         modalContent.classList.add('scale-100');
+                    }, 10);
+               }
+
+               function hideGameOverModal() {
+                    modalContent.classList.remove('scale-100');
+                    modalContent.classList.add('scale-95');
+                    setTimeout(() => {
+                         gameOverModal.classList.add('hidden');
+                    }, 300); // match transition duration
+               }
+
+               // ==========================================
+               // Event Listeners for Controls
+               // ==========================================
+
+               document.getElementById('newGameBtn').addEventListener('click', function () {
+                    game.reset();
+                    board.start();
+                    removeHighlights();
+                    updateStatus();
+                    updateMoveHistory();
+
+                    // Stop engine if it was thinking
+                    if (isEngineComputing && stockfishWorker) {
+                         sendCommand('stop');
+                         isEngineComputing = false;
+                         aiThinkingEl.classList.add('hidden');
+                    }
+
+                    // If AI is white (player flipped board), AI needs to move first
+                    if (board.orientation() === 'black') {
+                         window.setTimeout(makeRandomOrAIMove, 500);
+                    }
+               });
+
+               document.getElementById('undoBtn').addEventListener('click', function () {
+                    // Can't undo while engine is calculating
+                    if (isEngineComputing) return;
+
+                    // Undo twice to undo AI move and Player move
+                    game.undo();
+                    game.undo();
+
+                    board.position(game.fen());
+                    removeHighlights();
+                    updateStatus();
+                    updateMoveHistory();
+               });
+
+               document.getElementById('flipBoardBtn').addEventListener('click', function () {
+                    if (isEngineComputing) return; // Prevent flip during calc to avoid confusion
+
+                    board.flip();
+                    playerColor = board.orientation() === 'white' ? 'w' : 'b';
+
+                    // If flipping makes it the AI's turn immediately (e.g. at start)
+                    if (game.turn() !== playerColor && !game.game_over()) {
+                         window.setTimeout(makeRandomOrAIMove, 500);
+                    } else {
+                         updateStatus(); // update turn indicator
+                    }
+               });
+
+               difficultySlider.addEventListener('input', function (e) {
+                    engineSkillLevel = parseInt(e.target.value, 10);
+                    updateEngineDifficulty();
+               });
+
+               document.getElementById('modalNewGameBtn').addEventListener('click', function () {
+                    hideGameOverModal();
+                    document.getElementById('newGameBtn').click();
+               });
+
+               // Handle window resize to keep board responsive
+               $(window).resize(function () {
+                    if (board) board.resize();
+               });
+
+               // ==========================================
+               // Initialization
+               // ==========================================
+
+               const config = {
+                    draggable: true,
+                    position: 'start',
+                    onDragStart: onDragStart,
+                    onDrop: onDrop,
+                    onSnapEnd: onSnapEnd,
+                    pieceTheme: 'https://chessboardjs.com/img/chesspieces/wikipedia/{piece}.png'
+               };
+
+               board = Chessboard('myBoard', config);
+
+               updateStatus();
+               initStockfish();
+
+          });
+     </script>
+</body>
+
+</html>
